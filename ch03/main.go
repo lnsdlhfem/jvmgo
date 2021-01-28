@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"jvmgo/ch03/classfile"
 	"jvmgo/ch03/classpath"
 	"strings"
 )
@@ -19,15 +20,39 @@ func main() {
 
 func startJvm(cmd *Cmd) {
 	cp := classpath.Parse(cmd.XjreOption, cmd.cpOption)
-	// 打印命令行参数
-	fmt.Printf("classpath:%s class:%s args:%v\n", cmd.cpOption, cmd.class, cmd.args)
-
 	className := strings.Replace(cmd.class, ".", "/", -1)
-	// 读取主类数据
+	cf := loadClass(className, cp)
+	fmt.Println(cmd.class)
+	printClassInfo(cf)
+}
+
+// 读取并解析class文件
+func loadClass(className string, cp *classpath.Classpath) *classfile.ClassFile {
 	classData, _, err := cp.ReadClass(className)
 	if err != nil {
-		fmt.Printf("Cound not find or load main class %s\n", cmd.class)
-		return
+		panic(err)
 	}
-	fmt.Printf("class data:%v\n", classData)
+	cf, err := classfile.Parse(classData)
+	if err != nil {
+		panic(err)
+	}
+	return cf
+}
+
+// 打印class文件中的一些重要信息
+func printClassInfo(cf *classfile.ClassFile) {
+	fmt.Printf("version: %v.%v\n", cf.MajorVersion(), cf.MinorVersion())
+	fmt.Printf("constants count: %v\n", len(cf.ConstantPool()))
+	fmt.Printf("access flags: 0x%x\n", cf.AccessFlags())
+	fmt.Printf("this class: %v\n", cf.ClassName())
+	fmt.Printf("super class: %v\n", cf.SuperClassName())
+	fmt.Printf("interfaces: %v\n", cf.Interfaces())
+	fmt.Printf("fields count: %v\n", len(cf.Fields()))
+	for _, f := range cf.Fields() {
+		fmt.Printf("  %s\n", f.Name())
+	}
+	fmt.Printf("methods count: %v\n", len(cf.Methods()))
+	for _, m := range cf.Methods() {
+		fmt.Printf("  %s\n", m.Name())
+	}
 }
