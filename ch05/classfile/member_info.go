@@ -35,9 +35,20 @@ func (self *MemberInfo) AccessFlags() uint16 {
 	return self.accessFlags
 }
 
-func (self *MemberInfo) Name() string       {
+func (self *MemberInfo) Name() string {
 	return self.cp.getUtf8(self.nameIndex)
 }
 func (self *MemberInfo) Descriptor() string {
 	return self.cp.getUtf8(self.descriptorIndex)
+}
+
+// 获取Code属性
+func (self *MemberInfo) CodeAttribute() *CodeAttribute {
+	for _, attrInfo := range self.attributes {
+		switch attrInfo.(type) {
+		case *CodeAttribute:
+			return attrInfo.(*CodeAttribute)
+		}
+	}
+	return nil
 }

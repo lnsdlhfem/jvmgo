@@ -7,10 +7,14 @@ type Thread struct {
 	stack *Stack
 }
 
-func newThread() *Thread {
+func NewThread() *Thread {
 	return &Thread{
 		stack: newStack(1024),
 	}
+}
+
+func (self *Thread) NewFrame(maxLocals, maxStack uint) *Frame {
+	return NewFrame(self, maxLocals, maxStack)
 }
 
 func (self *Thread) PC() int {
